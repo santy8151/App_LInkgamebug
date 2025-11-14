@@ -1,8 +1,10 @@
-📌 App_juegoLinlgamehub– Plataforma de Juegos en la Nube con React, Java Microservices y Estructuras de Datos
+📌 Appweb_Linkdgamehub– Plataforma de Juegos en la Nube con React, Java Microservices y Estructuras de Datos
 
 Aplicación web que consume la API de GamePix para mostrar videojuegos mediante un iframe, soportada por una arquitectura de microservicios en Java, múltiples estructuras de datos personalizadas y un frontend moderno en React.
 
 Este proyecto simula un modelo de negocio digital, integrando almacenamiento de usuarios, enrutamiento de microservicios y consumo de APIs externas.
+
+se deja funcionamiento serveless por ai quieren montarlo a la nube
 
 ---
 
