@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkdGameHub — Cloud Gaming Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+:root{
+  --bg:#07080f;--bg2:#0d0f1a;--card:#111420;--card2:#161928;
+  --border:#1e2540;--border2:#2a3560;
+  --accent:#6c63ff;--accent2:#ff6584;
+  --cyan:#00f5d4;--gold:#ffd60a;--green:#22c55e;
+  --text:#d0d8f0;--muted:#5a6494;--dim:#2a3060;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;font-weight:400;overflow-x:hidden;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 20%,rgba(108,99,255,0.07) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(0,245,212,0.05) 0%,transparent 60%);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(108,99,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(108,99,255,0.03) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
+#root{position:relative;z-index:1;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--bg2);}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px;}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(108,99,255,.3)}50%{box-shadow:0 0 40px rgba(108,99,255,.6)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.fade-up{animation:fadeUp .4s ease both;}
+
+/* ── NAVBAR ── */
+.navbar{position:sticky;top:0;z-index:300;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:58px;background:rgba(7,8,15,.97);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);}
+.nav-brand{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:900;letter-spacing:1px;background:linear-gradient(90deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.brand-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;animation:glow 3s ease-in-out infinite;flex-shrink:0;}
+.nav-tabs{display:flex;gap:3px;}
+.nav-tab{padding:7px 15px;border-radius:6px;font-family:'Exo 2',sans-serif;font-size:13px;font-weight:600;color:var(--muted);background:transparent;border:none;cursor:pointer;transition:all .2s;letter-spacing:.3px;}
+.nav-tab:hover{color:var(--text);background:rgba(108,99,255,.1);}
+.nav-tab.active{color:#fff;background:rgba(108,99,255,.2);border:1px solid rgba(108,99,255,.3);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.user-chip{display:flex;align-items:center;gap:7px;padding:5px 13px;background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.25);border-radius:20px;font-size:13px;font-weight:600;color:var(--accent);cursor:pointer;transition:all .2s;}
+.user-chip:hover{background:rgba(108,99,255,.2);}
+.online{width:7px;height:7px;background:var(--cyan);border-radius:50%;box-shadow:0 0 6px var(--cyan);animation:pulse 2s ease-in-out infinite;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:8px;font-family:'Exo 2',sans-serif;font-size:13px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;border:none;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.btn::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);transition:left .4s;}
+.btn:hover::after{left:100%;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;box-shadow:0 4px 20px rgba(108,99,255,.35);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(108,99,255,.5);}
+.btn-outline{background:transparent;color:var(--cyan);border:1px solid var(--cyan);}
+.btn-outline:hover{background:rgba(0,245,212,.1);transform:translateY(-2px);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#f59e0b);color:#000;font-weight:800;}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(255,214,10,.35);}
+.btn-danger{background:linear-gradient(135deg,var(--accent2),#ef4444);color:#fff;}
+.btn-danger:hover{transform:translateY(-2px);}
+.btn-sm{padding:6px 13px;font-size:11px;}
+.btn-full{width:100%;justify-content:center;margin-top:4px;}
+
+/* ── AUTH MODAL ── */
+.auth-overlay{position:fixed;inset:0;background:rgba(7,8,15,.97);z-index:600;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(20px);animation:fadeIn .3s ease;}
+.auth-card{background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:38px;width:100%;max-width:400px;box-shadow:0 0 80px rgba(108,99,255,.2);position:relative;overflow:hidden;}
+.auth-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--cyan),var(--accent2));}
+.auth-logo{text-align:center;margin-bottom:26px;}
+.auth-icon{font-size:52px;display:block;animation:float 3s ease-in-out infinite;margin-bottom:10px;}
+.auth-logo h2{font-size:22px;font-weight:900;color:#fff;}
+.auth-logo p{font-size:12px;color:var(--muted);margin-top:5px;font-family:'JetBrains Mono',monospace;}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;font-family:'JetBrains Mono',monospace;}
+.form-input{width:100%;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:14px;transition:all .2s;outline:none;}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.15);}
+.pass-wrap{position:relative;}
+.pass-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);}
+.auth-error{background:rgba(255,101,132,.1);border:1px solid rgba(255,101,132,.3);border-radius:6px;padding:9px 13px;font-size:12px;color:var(--accent2);margin-bottom:12px;}
+.auth-hint{margin-top:10px;font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;background:var(--bg2);padding:10px;border-radius:6px;border:1px solid var(--border);}
+.auth-hint strong{color:var(--cyan);}
+.auth-switch{text-align:center;margin-top:16px;font-size:13px;color:var(--muted);}
+.auth-switch span{color:var(--accent);cursor:pointer;font-weight:700;}
+.auth-switch span:hover{text-decoration:underline;}
+.hash-badge{display:flex;align-items:center;gap:6px;margin-top:10px;padding:8px 12px;background:rgba(0,245,212,.05);border:1px solid rgba(0,245,212,.15);border-radius:6px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--cyan);}
+
+/* ── HERO ── */
+.hero{padding:52px 28px 32px;text-align:center;position:relative;overflow:hidden;}
+.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:4px;text-transform:uppercase;margin-bottom:14px;}
+.hero h1{font-size:clamp(34px,6vw,70px);font-weight:900;line-height:1.05;color:#fff;margin-bottom:12px;}
+.hero h1 .g1{background:linear-gradient(90deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero h1 .g2{background:linear-gradient(90deg,var(--accent2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-sub{font-size:15px;color:var(--muted);max-width:560px;margin:0 auto 28px;line-height:1.7;}
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+/* ── STATS ── */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:0 28px 28px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;transition:all .25s;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:.7;}
+.stat-card:nth-child(1)::before{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat-card:nth-child(2)::before{background:linear-gradient(90deg,var(--cyan),transparent);}
+.stat-card:nth-child(3)::before{background:linear-gradient(90deg,var(--gold),transparent);}
+.stat-card:nth-child(4)::before{background:linear-gradient(90deg,var(--accent2),transparent);}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.stat-icon{font-size:22px;margin-bottom:8px;}
+.stat-val{font-size:26px;font-weight:900;color:#fff;margin-bottom:2px;}
+.stat-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;}
+
+/* ── SECTION ── */
+.section{padding:28px;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.sec-title{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;color:#fff;}
+.sec-title .tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+
+/* ── FILTERS ── */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.filter-pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all .2s;}
+.filter-pill:hover{color:var(--text);border-color:var(--border2);}
+.filter-pill.active{background:rgba(108,99,255,.2);color:var(--accent);border-color:var(--accent);}
+.search-box{padding:7px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:13px;outline:none;width:200px;transition:border-color .2s;}
+.search-box:focus{border-color:var(--accent);}
+.sort-select{padding:7px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;outline:none;}
+
+/* ── GAMES GRID ── */
+.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px;}
+.game-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .3s;position:relative;}
+.game-card:hover{transform:translateY(-6px) scale(1.02);border-color:var(--accent);box-shadow:0 16px 40px rgba(108,99,255,.25);}
+.game-thumb-wrap{width:100%;height:140px;position:relative;overflow:hidden;background:var(--bg2);}
+.game-thumb{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+.game-card:hover .game-thumb{transform:scale(1.08);}
+.thumb-shimmer{width:100%;height:100%;background:linear-gradient(90deg,var(--bg2) 25%,var(--card) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;}
+.play-overlay{position:absolute;inset:0;background:rgba(108,99,255,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:0;transition:opacity .25s;}
+.game-card:hover .play-overlay{opacity:1;}
+.play-icon{font-size:36px;}
+.play-text{font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;letter-spacing:2px;}
+.game-info{padding:11px 12px;}
+.game-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.game-footer{display:flex;align-items:center;justify-content:space-between;}
+.game-cat{font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;color:var(--muted);text-transform:uppercase;}
+.game-rating{font-size:11px;font-weight:700;color:var(--gold);}
+.game-badge{position:absolute;top:8px;left:8px;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:1px;text-transform:uppercase;z-index:2;}
+.badge-hot{background:rgba(255,101,132,.9);color:#fff;}
+.badge-new{background:rgba(0,245,212,.9);color:#000;}
+.badge-top{background:rgba(255,214,10,.9);color:#000;}
+
+/* ── GAME MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(7,8,15,.97);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(12px);animation:fadeIn .2s ease;}
+.modal{background:var(--card2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:1080px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 80px rgba(108,99,255,.2);}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+.modal-title{font-size:17px;font-weight:800;color:#fff;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.modal-meta{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);font-weight:400;}
+.modal-actions{display:flex;align-items:center;gap:8px;}
+.modal-close{width:32px;height:32px;border-radius:6px;background:rgba(255,101,132,.15);border:1px solid rgba(255,101,132,.3);color:var(--accent2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.modal-close:hover{background:rgba(255,101,132,.3);}
+.modal-body{flex:1;overflow:hidden;position:relative;min-height:300px;}
+.game-iframe{width:100%;height:68vh;border:none;background:#000;display:block;}
+.iframe-cover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--card2);gap:16px;}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+.loading-text{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+.error-panel{text-align:center;padding:24px;}
+.error-panel .err-icon{font-size:48px;margin-bottom:12px;}
+.error-panel p{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;}
+
+/* ── ARCH / DS PANELS ── */
+.arch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:24px;}
+.svc-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;border-left-width:3px;border-left-style:solid;}
+.svc-card:hover{border-right-color:var(--border2);border-top-color:var(--border2);border-bottom-color:var(--border2);}
+.svc-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.svc-desc{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.svc-row{display:flex;align-items:center;justify-content:space-between;margin-top:12px;}
+.port-tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.2);padding:2px 8px;border-radius:4px;}
+.status-tag{font-size:10px;padding:3px 8px;border-radius:4px;font-weight:700;letter-spacing:1px;background:rgba(0,245,212,.1);color:var(--cyan);border:1px solid rgba(0,245,212,.2);}
+.ds-list{display:flex;flex-direction:column;gap:8px;}
+.ds-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;border-left-width:3px;border-left-style:solid;}
+.ds-info{flex:1;}
+.ds-name{font-size:12px;font-weight:700;color:#fff;font-family:'JetBrains Mono',monospace;margin-bottom:3px;}
+.ds-ops{font-size:10px;color:var(--muted);}
+.cloud-box{margin-top:20px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;}
+.cloud-title{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:12px;}
+.cloud-step{display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--text);margin-bottom:8px;line-height:1.5;}
+.cloud-step .ck{color:var(--cyan);flex-shrink:0;}
+
+/* ── USERS TABLE ── */
+.users-table{width:100%;border-collapse:collapse;font-size:12px;}
+.users-table th{text-align:left;padding:9px 13px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.users-table td{padding:10px 13px;border-bottom:1px solid rgba(30,37,64,.4);color:var(--text);}
+.users-table tr:hover td{background:rgba(108,99,255,.04);}
+.u-avatar{width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:inline-flex;align-items:center;justify-content:center;font-size:14px;margin-right:7px;vertical-align:middle;}
+.role-tag{font-size:9px;padding:2px 8px;border-radius:4px;font-weight:700;letter-spacing:1px;}
+.role-admin{background:rgba(108,99,255,.15);color:var(--accent);border:1px solid rgba(108,99,255,.3);}
+.role-user{background:rgba(0,245,212,.1);color:var(--cyan);border:1px solid rgba(0,245,212,.2);}
+.hash-mini{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ── TRENDING ── */
+.trend-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all .2s;}
+.trend-item:hover{transform:translateX(4px);}
+.rank-bubble{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;flex-shrink:0;}
+.trend-thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;background:var(--bg2);}
+.trend-info{flex:1;}
+.trend-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.trend-sub{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+/* ── API STATUS ── */
+.api-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(0,245,212,.04);border:1px solid rgba(0,245,212,.15);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);margin-bottom:16px;}
+.api-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 6px var(--cyan);animation:pulse 1.5s ease-in-out infinite;}
+
+/* ── FOOTER ── */
+.footer{padding:18px 28px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;flex-wrap:wrap;gap:10px;}
+.arch-pills{display:flex;gap:8px;flex-wrap:wrap;}
+.arch-pill{padding:3px 10px;border-radius:4px;background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.15);color:var(--accent);font-size:9px;letter-spacing:1px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .stats-bar{grid-template-columns:1fr 1fr;padding:0 16px 20px;}
+  .games-grid{grid-template-columns:repeat(2,1fr);}
+  .section{padding:18px 14px;}
+  .navbar{padding:0 14px;}
+  .nav-tabs{display:none;}
+  .game-iframe{height:50vh;}
+}
+@media(max-width:480px){
+  .games-grid{grid-template-columns:1fr;}
+  .stats-bar{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+/* ══════════════════════════════════════════════
+   SHA-256  —  encriptación real de contraseñas
+══════════════════════════════════════════════ */
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray  = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* ══════════════════════════════════════════════
+   DATA STRUCTURES
+══════════════════════════════════════════════ */
+class HashTable {
+  constructor(size = 64) { this.table = new Array(size); this.size = size; }
+  _hash(key) {
+    let h = 0;
+    for (let i = 0; i < Math.min(String(key).length, 100); i++)
+      h = (h * 31 + String(key).charCodeAt(i)) % this.size;
+    return h;
+  }
+  set(key, val) {
+    const i = this._hash(key);
+    if (!this.table[i]) this.table[i] = [];
+    const x = this.table[i].findIndex(([k]) => k === key);
+    if (x >= 0) this.table[i][x] = [key, val];
+    else this.table[i].push([key, val]);
+  }
+  get(key) { const b = this.table[this._hash(key)]; return b?.find(([k]) => k === key)?.[1]; }
+  values() { return this.table.filter(Boolean).flatMap(b => b.map(([, v]) => v)); }
+  size_() { return this.values().length; }
+}
+
+class BSTNode { constructor(g) { this.g = g; this.l = this.r = null; } }
+class BST {
+  constructor() { this.root = null; }
+  insert(g) {
+    const n = new BSTNode(g);
+    if (!this.root) { this.root = n; return; }
+    let c = this.root;
+    while (true) {
+      if (g.rkScore >= c.g.rkScore) { if (!c.r) { c.r = n; return; } c = c.r; }
+      else { if (!c.l) { c.l = n; return; } c = c.l; }
+    }
+  }
+  inorder(node = this.root, res = []) {
+    if (!node) return res;
+    this.inorder(node.l, res); res.push(node.g); this.inorder(node.r, res);
+    return res;
+  }
+}
+
+class PriorityQueue {
+  constructor() { this.heap = []; }
+  _p(i) { return Math.floor((i - 1) / 2); }
+  enqueue(item) {
+    this.heap.push(item);
+    let i = this.heap.length - 1;
+    while (i > 0 && this.heap[i].rkScore > this.heap[this._p(i)].rkScore) {
+      [this.heap[i], this.heap[this._p(i)]] = [this.heap[this._p(i)], this.heap[i]];
+      i = this._p(i);
+    }
+  }
+  toSorted() { return [...this.heap].sort((a, b) => b.rkScore - a.rkScore); }
+}
+
+/* ══════════════════════════════════════════════
+   GAMEPIX API
+   Endpoint público: https://games.gamepix.com/games?sid=
+   (requiere SID de publisher — usamos proxy/demo)
+══════════════════════════════════════════════ */
+const GAMEPIX_SID = ''; // <-- Agrega aquí tu SID de GamePix
+const GAMEPIX_URL = `https://games.gamepix.com/games?sid=${GAMEPIX_SID}&limit=50&order=q`;
+
+// Juegos de fallback con thumbnails reales de GamePix CDN (sin SID)
+const FALLBACK_GAMES = [
+  { id:'g001', title:'Subway Surfers',    category:'Runner',    rkScore:980000, thumbnailUrl:'https://img.gamepix.com/games/subway-surfers/icon/subway-surfers.png?w=256&h=256', url:'https://gamepix.com/play/subway-surfers', width:800, height:600 },
+  { id:'g002', title:'Stickman Archer',   category:'Action',    rkScore:870000, thumbnailUrl:'https://img.gamepix.com/games/stickman-archer-online/icon/stickman-archer-online.png?w=256&h=256', url:'https://gamepix.com/play/stickman-archer-online', width:800, height:600 },
+  { id:'g003', title:'Jewel Burst',       category:'Puzzle',    rkScore:760000, thumbnailUrl:'https://img.gamepix.com/games/jewel-burst/icon/jewel-burst.png?w=256&h=256', url:'https://gamepix.com/play/jewel-burst', width:800, height:600 },
+  { id:'g004', title:'Moto X3M',          category:'Racing',    rkScore:850000, thumbnailUrl:'https://img.gamepix.com/games/moto-x3m/icon/moto-x3m.png?w=256&h=256', url:'https://gamepix.com/play/moto-x3m', width:800, height:600 },
+  { id:'g005', title:'Ball Blast',        category:'Action',    rkScore:720000, thumbnailUrl:'https://img.gamepix.com/games/ball-blast/icon/ball-blast.png?w=256&h=256', url:'https://gamepix.com/play/ball-blast', width:800, height:600 },
+  { id:'g006', title:'Gold Miner',        category:'Classic',   rkScore:690000, thumbnailUrl:'https://img.gamepix.com/games/gold-miner/icon/gold-miner.png?w=256&h=256', url:'https://gamepix.com/play/gold-miner', width:800, height:600 },
+  { id:'g007', title:'Knife Hit',         category:'Arcade',    rkScore:810000, thumbnailUrl:'https://img.gamepix.com/games/knife-hit/icon/knife-hit.png?w=256&h=256', url:'https://gamepix.com/play/knife-hit', width:800, height:600 },
+  { id:'g008', title:'Mahjong Classic',   category:'Puzzle',    rkScore:640000, thumbnailUrl:'https://img.gamepix.com/games/mahjong-classic/icon/mahjong-classic.png?w=256&h=256', url:'https://gamepix.com/play/mahjong-classic', width:800, height:600 },
+  { id:'g009', title:'Stack',             category:'Arcade',    rkScore:750000, thumbnailUrl:'https://img.gamepix.com/games/stack/icon/stack.png?w=256&h=256', url:'https://gamepix.com/play/stack', width:800, height:600 },
+  { id:'g010', title:'Drift Hunters',     category:'Racing',    rkScore:930000, thumbnailUrl:'https://img.gamepix.com/games/drift-hunters/icon/drift-hunters.png?w=256&h=256', url:'https://gamepix.com/play/drift-hunters', width:800, height:600 },
+  { id:'g011', title:'Snake.io',          category:'Classic',   rkScore:880000, thumbnailUrl:'https://img.gamepix.com/games/snakeio/icon/snakeio.png?w=256&h=256', url:'https://gamepix.com/play/snakeio', width:800, height:600 },
+  { id:'g012', title:'Soccer Random',     category:'Sports',    rkScore:820000, thumbnailUrl:'https://img.gamepix.com/games/soccer-random/icon/soccer-random.png?w=256&h=256', url:'https://gamepix.com/play/soccer-random', width:800, height:600 },
+  { id:'g013', title:'Alien Shooter',     category:'Action',    rkScore:670000, thumbnailUrl:'https://img.gamepix.com/games/alien-shooter/icon/alien-shooter.png?w=256&h=256', url:'https://gamepix.com/play/alien-shooter', width:800, height:600 },
+  { id:'g014', title:'Candy Crush Saga',  category:'Puzzle',    rkScore:910000, thumbnailUrl:'https://img.gamepix.com/games/candy-crush-saga/icon/candy-crush-saga.png?w=256&h=256', url:'https://gamepix.com/play/candy-crush-saga', width:800, height:600 },
+  { id:'g015', title:'Helix Jump',        category:'Arcade',    rkScore:830000, thumbnailUrl:'https://img.gamepix.com/games/helix-jump/icon/helix-jump.png?w=256&h=256', url:'https://gamepix.com/play/helix-jump', width:800, height:600 },
+  { id:'g016', title:'Merge Cannon',      category:'Strategy',  rkScore:600000, thumbnailUrl:'https://img.gamepix.com/games/merge-cannon/icon/merge-cannon.png?w=256&h=256', url:'https://gamepix.com/play/merge-cannon', width:800, height:600 },
+];
+
+// Poblar estructuras de datos
+const gameHT  = new HashTable(128);
+const gameBST = new BST();
+const gamePQ  = new PriorityQueue();
+
+// ══════════════════════════════════════════════
+//  USERS DB (con hashes SHA-256 pre-computados)
+// ══════════════════════════════════════════════
+// Hashes de: '1234', 'pass', 'test' respectivamente
+const USERS_DB = new HashTable(32);
+const SEED_USERS = [
+  { id:'u1', username:'santiago_dev', email:'santiago@cun.edu.co',
+    passHash:'03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
+    avatar:'👨‍💻', role:'admin', joined:'2024-01-15', gamesPlayed:47 },
+  { id:'u2', username:'player_pro', email:'player@gmail.com',
+    passHash:'d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1',
+    avatar:'🎮', role:'user', joined:'2024-02-20', gamesPlayed:112 },
+  { id:'u3', username:'gamer_cun', email:'gamer@cun.edu.co',
+    passHash:'9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+    avatar:'🕹️', role:'user', joined:'2024-03-01', gamesPlayed:23 },
+];
+SEED_USERS.forEach(u => USERS_DB.set(u.username, u));
+
+/* ══════════════════════════════════════════════
+   COMPONENTS
+══════════════════════════════════════════════ */
+
+// ── AUTH ──────────────────────────────────────
+function AuthModal({ onLogin }) {
+  const [mode, setMode]       = useState('login');
+  const [form, setForm]       = useState({ username:'', email:'', password:'' });
+  const [error, setError]     = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [hashDisplay, setHashDisplay] = useState('');
+
+  const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const showHash = async (pwd) => {
+    if (pwd.length > 2) setHashDisplay(await sha256(pwd));
+    else setHashDisplay('');
+  };
+
+  const submit = async () => {
+    setError(''); setLoading(true);
+    try {
+      const hash = await sha256(form.password);
+      if (mode === 'login') {
+        const user = USERS_DB.get(form.username);
+        if (!user || user.passHash !== hash) {
+          setError('Usuario o contraseña incorrectos.'); setLoading(false); return;
+        }
+        onLogin(user);
+      } else {
+        if (!form.username || !form.email || !form.password) {
+          setError('Completa todos los campos.'); setLoading(false); return;
+        }
+        if (USERS_DB.get(form.username)) {
+          setError('El usuario ya existe.'); setLoading(false); return;
+        }
+        const newUser = { id:'u'+Date.now(), username:form.username, email:form.email,
+          passHash:hash, avatar:'🎮', role:'user',
+          joined:new Date().toISOString().slice(0,10), gamesPlayed:0 };
+        USERS_DB.set(form.username, newUser);
+        onLogin(newUser);
+      }
+    } catch(e) { setError('Error interno.'); }
+    setLoading(false);
+  };
+
+  return (
+    <div className="auth-overlay">
+      <div className="auth-card fade-up">
+        <div className="auth-logo">
+          <span className="auth-icon">🎮</span>
+          <h2>LinkdGameHub</h2>
+          <p>// Cloud Gaming Platform v2.0</p>
+        </div>
+        {error && <div className="auth-error">⚠️ {error}</div>}
+        {mode === 'register' && (
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input className="form-input" name="email" placeholder="tu@email.com" value={form.email} onChange={handle} />
+          </div>
+        )}
+        <div className="form-group">
+          <label className="form-label">Usuario</label>
+          <input className="form-input" name="username" placeholder={mode==='login'?'santiago_dev':'mi_usuario'} value={form.username} onChange={handle} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Contraseña</label>
+          <div className="pass-wrap">
+            <input className="form-input" name="password" type={showPass?'text':'password'} placeholder="••••••••" value={form.password}
+              onChange={e=>{ handle(e); showHash(e.target.value); }}
+              onKeyDown={e=>e.key==='Enter'&&submit()} style={{paddingRight:'40px'}} />
+            <button className="pass-toggle" type="button" onClick={()=>setShowPass(!showPass)}>{showPass?'🙈':'👁️'}</button>
+          </div>
+        </div>
+        {hashDisplay && (
+          <div className="hash-badge">
+            🔒 SHA-256: <span style={{color:'var(--cyan)',overflow:'hidden',textOverflow:'ellipsis',maxWidth:'240px',whiteSpace:'nowrap'}}>{hashDisplay}</span>
+          </div>
+        )}
+        <button className="btn btn-primary btn-full" onClick={submit} disabled={loading} style={{marginTop:'14px'}}>
+          {loading ? '⏳ Procesando...' : mode==='login' ? '🚀 Iniciar Sesión' : '✨ Registrarse'}
+        </button>
+        {mode === 'login' && (
+          <div className="auth-hint">
+            Demo → <strong>santiago_dev</strong> / <strong>1234</strong>
+          </div>
+        )}
+        <div className="auth-switch">
+          {mode==='login'
+            ? <>¿Sin cuenta? <span onClick={()=>{setMode('register');setError('');}}>Regístrate</span></>
+            : <>¿Ya tienes cuenta? <span onClick={()=>{setMode('login');setError('');}}>Inicia sesión</span></>
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── GAME THUMB ────────────────────────────────
+function GameThumb({ src, alt }) {
+  const [err, setErr] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className="game-thumb-wrap">
+      {!loaded && !err && <div className="thumb-shimmer" />}
+      {!err
+        ? <img className="game-thumb" src={src} alt={alt}
+            onLoad={()=>setLoaded(true)} onError={()=>setErr(true)}
+            style={loaded?{}:{position:'absolute',opacity:0}} />
+        : <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'48px',background:'var(--bg2)'}}>🎮</div>
+      }
+    </div>
+  );
+}
+
+// ── GAME MODAL ────────────────────────────────
+function GameModal({ game, onClose }) {
+  const [status, setStatus] = useState('loading'); // loading | ready | error
+  const iframeRef = useRef(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (status === 'loading') setStatus('ready');
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const openExternal = () => window.open(game.url, '_blank');
+
+  return (
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal fade-up">
+        <div className="modal-header">
+          <div className="modal-title">
+            🎮 {game.title}
+            <span className="modal-meta">// {game.category} · :8081/games/{game.id}</span>
+          </div>
+          <div className="modal-actions">
+            <button className="btn btn-sm btn-outline" onClick={openExternal}>⬡ Abrir ventana</button>
+            <button className="modal-close" onClick={onClose}>✕</button>
+          </div>
+        </div>
+        <div className="modal-body">
+          {status === 'loading' && (
+            <div className="iframe-cover">
+              <div className="spinner" />
+              <span className="loading-text">Cargando {game.title}...</span>
+              <button className="btn btn-sm btn-outline" style={{marginTop:8}} onClick={()=>setStatus('ready')}>Continuar</button>
+            </div>
+          )}
+          {status === 'error' && (
+            <div className="iframe-cover">
+              <div className="error-panel">
+                <div className="err-icon">🔒</div>
+                <p>Este juego no permite embebido directo.<br />Ábrelo en una nueva pestaña para jugarlo.</p>
+                <button className="btn btn-primary" onClick={openExternal}>🚀 Jugar en nueva pestaña</button>
+              </div>
+            </div>
+          )}
+          <iframe
+            ref={iframeRef}
+            className="game-iframe"
+            src={game.url}
+            title={game.title}
+            allow="fullscreen; autoplay"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock"
+            onLoad={()=>setStatus('ready')}
+            onError={()=>setStatus('error')}
+            style={status==='loading'?{opacity:0,pointerEvents:'none',position:'absolute'}:{}}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── GAME CARD ─────────────────────────────────
+function GameCard({ game, onClick, rank }) {
+  const badge = rank===1?'top': rank===2?'hot': game.rkScore>850000?'hot':null;
+  return (
+    <div className="game-card fade-up" onClick={()=>onClick(game)}>
+      {badge && <span className={`game-badge badge-${badge}`}>{badge.toUpperCase()}</span>}
+      <GameThumb src={game.thumbnailUrl} alt={game.title} />
+      <div className="play-overlay">
+        <span className="play-icon">▶</span>
+        <span className="play-text">JUGAR AHORA</span>
+      </div>
+      <div className="game-info">
+        <div className="game-title">{game.title}</div>
+        <div className="game-footer">
+          <span className="game-cat">{game.category}</span>
+          <span className="game-rating">⭐ {(game.rkScore/200000).toFixed(1)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── CATALOG ───────────────────────────────────
+function CatalogTab({ games, loading, apiStatus }) {
+  const [filter, setFilter] = useState('all');
+  const [sort, setSort]     = useState('popular');
+  const [search, setSearch] = useState('');
+  const [active, setActive] = useState(null);
+
+  const cats = ['all', ...new Set(games.map(g => g.category))];
+
+  const displayed = (() => {
+    let g = games;
+    if (filter !== 'all') g = g.filter(x => x.category === filter);
+    if (search) g = g.filter(x => x.title.toLowerCase().includes(search.toLowerCase()));
+    if (sort === 'popular') g = [...g].sort((a,b) => b.rkScore - a.rkScore);
+    if (sort === 'bst')     g = gameBST.inorder().filter(x => (filter==='all'||x.category===filter) && (!search||x.title.toLowerCase().includes(search.toLowerCase()))).reverse();
+    if (sort === 'pq')      g = gamePQ.toSorted().filter(x => (filter==='all'||x.category===filter) && (!search||x.title.toLowerCase().includes(search.toLowerCase())));
+    return g;
+  })();
+
+  return (
+    <div className="section fade-up">
+      {active && <GameModal game={active} onClose={()=>setActive(null)} />}
+      <div className="sec-head">
+        <div className="sec-title">🎮 Catálogo GamePix <span className="tag">// API LIVE</span></div>
+        <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+          <input className="search-box" placeholder="🔍 Buscar juego..." value={search} onChange={e=>setSearch(e.target.value)} />
+          <select className="sort-select" value={sort} onChange={e=>setSort(e.target.value)}>
+            <option value="popular">📊 Más jugados</option>
+            <option value="bst">🌳 Rating (BST)</option>
+            <option value="pq">🔥 Tendencias (Heap)</option>
+          </select>
+        </div>
+      </div>
+      <div className="api-bar">
+        <div className="api-dot" />
+        GamePix API · {games.length} juegos cargados · {apiStatus}
+      </div>
+      <div className="filter-row">
+        {cats.slice(0,8).map(c => (
+          <button key={c} className={`filter-pill ${filter===c?'active':''}`} onClick={()=>setFilter(c)}>
+            {c==='all'?'Todos':c}
+          </button>
+        ))}
+      </div>
+      {loading ? (
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'200px',gap:16}}>
+          <div className="spinner" /><span style={{fontFamily:'JetBrains Mono',fontSize:13,color:'var(--muted)'}}>Cargando juegos desde GamePix API...</span>
+        </div>
+      ) : (
+        <div className="games-grid">
+          {displayed.map((g,i) => <GameCard key={g.id} game={g} onClick={setActive} rank={i+1} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── TRENDING ──────────────────────────────────
+function TrendingTab({ games }) {
+  const [active, setActive] = useState(null);
+  const pqTop  = gamePQ.toSorted().slice(0, 8);
+  const bstTop = gameBST.inorder().slice().reverse().slice(0, 8);
+
+  const TrendItem = ({g, i, color, onPlay}) => (
+    <div className="trend-item" style={{borderLeftColor:color,borderLeftWidth:3}}
+      onMouseEnter={e=>e.currentTarget.style.borderColor=color}
+      onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}
+      onClick={()=>onPlay(g)}>
+      <div className="rank-bubble" style={{background:i<3?color:'var(--bg2)',color:i<3?'#000':'var(--muted)'}}>{i+1}</div>
+      <GameThumb src={g.thumbnailUrl} alt={g.title} />
+      <div className="trend-info">
+        <div className="trend-name">{g.title}</div>
+        <div className="trend-sub">{g.category} · score: {g.rkScore?.toLocaleString()}</div>
+      </div>
+      <span>▶</span>
+    </div>
+  );
+
+  return (
+    <div className="section fade-up">
+      {active && <GameModal game={active} onClose={()=>setActive(null)} />}
+      <div className="sec-title" style={{marginBottom:20}}>🔥 Tendencias & Rankings <span className="tag">// heap + bst</span></div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24}}>
+        <div>
+          <div style={{fontFamily:'JetBrains Mono',fontSize:10,color:'var(--gold)',letterSpacing:2,marginBottom:12}}>// MAX-HEAP — Más populares</div>
+          {pqTop.map((g,i) => <TrendItem key={g.id} g={g} i={i} color="var(--gold)" onPlay={setActive} />)}
+        </div>
+        <div>
+          <div style={{fontFamily:'JetBrains Mono',fontSize:10,color:'var(--cyan)',letterSpacing:2,marginBottom:12}}>// BST IN-ORDER — Top rating</div>
+          {bstTop.map((g,i) => <TrendItem key={g.id} g={g} i={i} color="var(--cyan)" onPlay={setActive} />)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ARCHITECTURE ──────────────────────────────
+function ArchTab() {
+  const svcs = [
+    { label:'Frontend React', port:5173, color:'#6c63ff', icon:'⚛️', desc:'Vite + React 18 + TypeScript' },
+    { label:'Microservicio A — Juegos', port:8081, color:'#00f5d4', icon:'🎮', desc:'Spring Boot · TablaHash · BST · PQ' },
+    { label:'Microservicio B — Usuarios', port:8082, color:'#ff6584', icon:'👤', desc:'Spring Boot · JPA · SHA-256 Auth' },
+    { label:'PostgreSQL DB', port:5432, color:'#ffd60a', icon:'🗄️', desc:'Users · Sessions · Config' },
+  ];
+  const ds = [
+    { name:'HashTable<String, Game>', ops:'get O(1) · set O(1) · size O(n)', icon:'#️⃣', color:'var(--accent)', n: gameHT.size_() },
+    { name:'BST<Game> ordenado por rkScore', ops:'insert O(log n) · inorder O(n)', icon:'🌳', color:'var(--cyan)', n: gameBST.inorder().length },
+    { name:'MaxHeap / PriorityQueue', ops:'enqueue O(log n) · peek O(1) · toSorted O(n log n)', icon:'📊', color:'var(--gold)', n: gamePQ.heap.length },
+  ];
+  return (
+    <div className="section fade-up">
+      <div className="sec-title" style={{marginBottom:20}}>🏗️ Arquitectura <span className="tag">// microservices + data structures</span></div>
+      <div className="arch-grid">
+        {svcs.map(s => (
+          <div key={s.port} className="svc-card" style={{borderLeftColor:s.color}}>
+            <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:10}}>
+              <span style={{fontSize:22}}>{s.icon}</span>
+              <div><div className="svc-title">{s.label}</div><div className="svc-desc">{s.desc}</div></div>
+            </div>
+            <div className="svc-row"><span className="port-tag">:{s.port}</span><span className="status-tag">RUNNING</span></div>
+          </div>
+        ))}
+      </div>
+      <div className="sec-title" style={{marginBottom:14}}>📂 Estructuras de datos <span className="tag">// :8081</span></div>
+      <div className="ds-list">
+        {ds.map(d => (
+          <div key={d.name} className="ds-row" style={{borderLeftColor:d.color}}>
+            <span style={{fontSize:22}}>{d.icon}</span>
+            <div className="ds-info">
+              <div className="ds-name">{d.name}</div>
+              <div className="ds-ops">{d.ops}</div>
+            </div>
+            <div style={{display:'flex',gap:8,alignItems:'center',flexShrink:0}}>
+              <span style={{fontFamily:'JetBrains Mono',fontSize:10,color:'var(--muted)'}}>{d.n} items</span>
+              <span className="status-tag">ACTIVO</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="cloud-box">
+        <div className="cloud-title">// SERVERLESS DEPLOY — cómo montar en la nube</div>
+        {[
+          ['Frontend','npm run build → Vercel / Netlify (arrastra /dist)'],
+          ['Microservicio A','mvn package → JAR → Railway / Render (free tier)'],
+          ['Microservicio B','mvn package → JAR → Railway / Render (free tier)'],
+          ['Base de Datos','Railway PostgreSQL o Supabase (free tier)'],
+          ['Variables env','GAMEPIX_SID, DB_URL, JWT_SECRET, CORS_ORIGINS'],
+          ['GamePix SID','Registra en partners.gamepix.com → Dashboard → Site ID'],
+        ].map(([k,v]) => (
+          <div key={k} className="cloud-step"><span className="ck">✓</span><span><strong style={{color:'var(--text)'}}>{k}:</strong> {v}</span></div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── USERS ─────────────────────────────────────
+function UsersTab() {
+  const users = USERS_DB.values();
+  const eps = [
+    { method:'POST', port:8082, path:'/api/users/login', desc:'SHA-256 password hash + JWT token' },
+    { method:'POST', port:8082, path:'/api/users/register', desc:'Registro con hash de contraseña' },
+    { method:'GET',  port:8081, path:'/api/games', desc:'Lista todos los juegos (HashTable)' },
+    { method:'GET',  port:8081, path:'/api/games/trending', desc:'Top juegos via PriorityQueue' },
+    { method:'GET',  port:8081, path:'/api/games/sorted', desc:'Juegos ordenados via BST' },
+    { method:'GET',  port:8082, path:'/api/users/:id', desc:'Perfil de usuario por ID' },
+  ];
+  return (
+    <div className="section fade-up">
+      <div className="sec-title" style={{marginBottom:20}}>👥 Usuarios <span className="tag">// :8082 · SHA-256</span></div>
+      <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:10,overflow:'hidden',marginBottom:20}}>
+        <table className="users-table">
+          <thead><tr><th>Usuario</th><th>Email</th><th>Rol</th><th>Registro</th><th>Partidas</th><th>Hash SHA-256</th></tr></thead>
+          <tbody>
+            {users.map(u => (
+              <tr key={u.id}>
+                <td><span className="u-avatar">{u.avatar}</span>{u.username}</td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11}}>{u.email}</td>
+                <td><span className={`role-tag role-${u.role}`}>{u.role.toUpperCase()}</span></td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11}}>{u.joined}</td>
+                <td style={{fontWeight:700,color:'var(--gold)'}}>{u.gamesPlayed}</td>
+                <td><div className="hash-mini" title={u.passHash}>{u.passHash}</div></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="sec-title" style={{marginBottom:14}}>🔌 Endpoints REST <span className="tag">// microservices api</span></div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:12}}>
+        {eps.map(ep => (
+          <div key={ep.path} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:8,padding:14}}>
+            <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:8}}>
+              <span style={{fontSize:10,padding:'2px 8px',borderRadius:4,fontWeight:700,fontFamily:'JetBrains Mono',background:ep.method==='GET'?'rgba(0,245,212,.1)':'rgba(108,99,255,.1)',color:ep.method==='GET'?'var(--cyan)':'var(--accent)',border:`1px solid ${ep.method==='GET'?'rgba(0,245,212,.2)':'rgba(108,99,255,.2)'}`}}>{ep.method}</span>
+              <span className="port-tag">:{ep.port}</span>
+            </div>
+            <div style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--text)',marginBottom:4}}>{ep.path}</div>
+            <div style={{fontSize:11,color:'var(--muted)'}}>{ep.desc}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   MAIN APP
+══════════════════════════════════════════════ */
+function App() {
+  const [user, setUser]       = useState(null);
+  const [tab, setTab]         = useState('catalog');
+  const [games, setGames]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [apiStatus, setApiStatus] = useState('Conectando...');
+
+  // Cargar juegos desde GamePix API (con fallback)
+  useEffect(() => {
+    const loadGames = async () => {
+      setLoading(true);
+      let loaded = [];
+      if (GAMEPIX_SID) {
+        try {
+          const res  = await fetch(GAMEPIX_URL);
+          const data = await res.json();
+          if (data?.data?.length) {
+            loaded = data.data;
+            setApiStatus(`GamePix API ✓ · ${loaded.length} juegos`);
+          }
+        } catch(e) { /* fallback */ }
+      }
+      if (!loaded.length) {
+        loaded = FALLBACK_GAMES;
+        setApiStatus(GAMEPIX_SID
+          ? 'Fallback activado (CORS) · Agrega tu SID de GamePix'
+          : 'Datos demo · Agrega GAMEPIX_SID para API real');
+      }
+      // Poblar estructuras
+      loaded.forEach(g => { gameHT.set(g.id, g); gameBST.insert(g); gamePQ.enqueue(g); });
+      setGames(loaded);
+      setLoading(false);
+    };
+    loadGames();
+  }, []);
+
+  const totalPlays = games.reduce((s,g) => s + (g.rkScore||0), 0);
+  const TABS = [
+    {id:'catalog',  label:'🎮 Juegos'},
+    {id:'trending', label:'🔥 Tendencias'},
+    {id:'arch',     label:'🏗️ Arquitectura'},
+    {id:'users',    label:'👥 Usuarios'},
+  ];
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',minHeight:'100vh'}}>
+      {!user && <AuthModal onLogin={setUser} />}
+
+      {/* NAVBAR */}
+      <nav className="navbar">
+        <div className="nav-brand">
+          <div className="brand-icon">🎮</div>
+          LinkdGameHub
+        </div>
+        <div className="nav-tabs">
+          {TABS.map(t => (
+            <button key={t.id} className={`nav-tab ${tab===t.id?'active':''}`} onClick={()=>setTab(t.id)}>{t.label}</button>
+          ))}
+        </div>
+        <div className="nav-right">
+          {user && <div className="user-chip" onClick={()=>setTab('users')}>{user.avatar} {user.username} <div className="online"/></div>}
+          <button className="btn btn-sm btn-danger" onClick={()=>setUser(null)}>Salir</button>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      {tab==='catalog' && (
+        <div className="hero">
+          <div className="hero-eyebrow">// GamePix API · React + Java Microservices · SHA-256 Auth</div>
+          <h1><span className="g1">Linkd</span><span className="g2">GameHub</span></h1>
+          <p className="hero-sub">Juega cientos de juegos HTML5 en la nube. Potenciado por la API de GamePix, microservicios Java y estructuras de datos personalizadas.</p>
+          <div className="hero-ctas">
+            <button className="btn btn-primary" onClick={()=>document.querySelector('.games-grid')?.scrollIntoView({behavior:'smooth'})}>🚀 Jugar Ahora</button>
+            <button className="btn btn-outline" onClick={()=>setTab('arch')}>🏗️ Arquitectura</button>
+            <button className="btn btn-gold" onClick={()=>setTab('trending')}>🔥 Tendencias</button>
+          </div>
+        </div>
+      )}
+
+      {/* STATS */}
+      <div className="stats-bar">
+        <div className="stat-card"><div className="stat-icon">🎮</div><div className="stat-val">{games.length}</div><div className="stat-label">Juegos · HashTable</div></div>
+        <div className="stat-card"><div className="stat-icon">👥</div><div className="stat-val">{USERS_DB.values().length}</div><div className="stat-label">Usuarios · SHA-256</div></div>
+        <div className="stat-card"><div className="stat-icon">📊</div><div className="stat-val">{(totalPlays/1000000).toFixed(1)}M</div><div className="stat-label">Score · Heap</div></div>
+        <div className="stat-card"><div className="stat-icon">⚡</div><div className="stat-val">3</div><div className="stat-label">Servicios · :8081-82</div></div>
+      </div>
+
+      {/* CONTENT */}
+      {tab==='catalog'  && <CatalogTab games={games} loading={loading} apiStatus={apiStatus} />}
+      {tab==='trending' && <TrendingTab games={games} />}
+      {tab==='arch'     && <ArchTab />}
+      {tab==='users'    && <UsersTab />}
+
+      {/* FOOTER */}
+      <footer className="footer" style={{marginTop:'auto'}}>
+        <span>🎮 LinkdGameHub · GamePix API · React + Java Microservices</span>
+        <div className="arch-pills">
+          <span className="arch-pill">React :5173</span>
+          <span className="arch-pill">Java :8081</span>
+          <span className="arch-pill">Java :8082</span>
+          <span className="arch-pill">PostgreSQL :5432</span>
+          <span className="arch-pill">SHA-256</span>
+        </div>
+        <span>Serverless-ready · CUN Bogotá 2025</span>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
